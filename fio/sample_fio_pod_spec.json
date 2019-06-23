@@ -1,0 +1,54 @@
+{
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+        "name": "fio"
+    },
+    "spec": {
+        "containers": [
+            {
+                "env": [
+                    {
+                        "name": "RW",
+                        "value": "randwrite"
+                    },
+                    {
+                        "name": "RT",
+                        "value": "600"
+                    },
+                    {
+                        "name": "QD",
+                        "value": "32"
+                    },
+                    {
+                        "name": "BLOCK_SIZE",
+                        "value": "4k"
+                    }
+                ],
+                "image": "devadigayatish/fio:v1.0",
+                "name": "fio",
+                "resources": {
+                    "requests": {
+                        "cpu": "400m",
+                        "memory": "512Mi"
+                    }
+                },
+                "volumeMounts": [
+                    {
+                        "mountPath": "/data",
+                        "name": "fio-vol"
+                    }
+                ]
+            }
+        ],
+        "restartPolicy": "OnFailure",
+        "volumes": [
+            {
+                "persistentVolumeClaim": {
+                    "claimName": "fio-volc"
+                },
+                "name": "fio-vol"
+            }
+        ]
+    }
+}
