@@ -1,6 +1,5 @@
 #!/bin/bash
 
-export FIO_JOB_FILE=${FIO_JOB_FILE:-/config/job.fio}
 export JOB_NAME=${JOB_NAME:-fio}
 export NJ=${NJ:-16}
 export QD=${QD:-16}
@@ -23,9 +22,12 @@ do
   
     # Calculating available size for each fio job
     available_size_per_job=`expr ${dir_size_int} / ${NJ}`M
+
+    # Generating job for each directory dynamically depending on available space
     JOB_STRING+=" --name=job$i --size=$available_size_per_job --directory=${DIR_LIST[$i]}"
 done
 
+# In case of rw=read, we will first write on the entire device before reading from it
 if [[ "$RW" == *read* ]]
 then
 	/usr/bin/fio --ioengine=libaio --rw=write --fill_device=1 --fill_fs=1 --iodepth=32 --bs=512K --numjobs=$NJ --group_reporting $JOB_STRING
