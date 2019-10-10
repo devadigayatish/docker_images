@@ -8,6 +8,7 @@ export DIR=${DIR:-/data}
 export DIRECT=${DIRECT:-1}
 export RW=${RW:-write}
 export RT=${RT:-300}
+export MODE=${MODE:-Default}
 
 # If DIR contains multiple directories, calculating size for each directory.
 # Each directory may be of different size
@@ -28,12 +29,12 @@ do
 done
 
 # In case of rw=read, we will first write on the entire device before reading from it
-if [[ "$RW" == *read* ]]
+if [[ "$RW" == *read* && "$MODE" != "ReadOnly" ]] || [[ "$MODE" == "FillDeviceOnly" ]]
 then
 	/usr/bin/fio --ioengine=libaio --rw=write --fill_device=1 --fill_fs=1 --iodepth=32 --bs=512K --numjobs=$NJ --group_reporting $JOB_STRING
 fi
 
-exec /usr/bin/fio --ioengine=libaio --rw=${RW} --numjobs=${NJ} --direct=${DIRECT} --bs=${BLOCK_SIZE} --iodepth=${QD} --runtime=${RT} --time_based=1 --group_reporting --eta-newline=1s --output /data/${JOB_NAME}.out $JOB_STRING
-
-
-
+if [[ "$MODE" != "FillDeviceOnly" ]]
+then
+	exec /usr/bin/fio --ioengine=libaio --rw=${RW} --numjobs=${NJ} --direct=${DIRECT} --bs=${BLOCK_SIZE} --iodepth=${QD} --runtime=${RT} --time_based=1 --group_reporting --eta-newline=1s --output /data/${JOB_NAME}.out $JOB_STRING
+fi
